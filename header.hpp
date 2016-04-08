@@ -22,6 +22,11 @@ namespace http {
 			std::string value;
 		};
 
+		struct websocket_frame
+		{
+
+		};
+
 	} // namespace server
 } // namespace http
 

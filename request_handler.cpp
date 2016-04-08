@@ -79,54 +79,33 @@ std::string compute_seckey(const std::string& client_key)
 		bin[i * 4 + 3] = tmp[i * 4];
 	}
 
-	//std::string hash_hex = sha1_to_string(bin);
-
-	// output hex digest
-	//std::cout << hash_hex.c_str() << std::endl;
-	//std::cout << Base64Utilities::ToBase64(v) << std::endl;
-
 	std::vector<unsigned char> v(bin, bin + sizeof bin / sizeof bin[0]);
 	std::string res = Base64Utilities::ToBase64(v);
 
 	return res;
-
-	/*
-	for (std::size_t i = 0; i<sizeof(digest) / sizeof(digest[0]); ++i) {
-		//std::cout << std::hex << hash[i];
-		printf("%X", digest[i]);
-	}
-	*/
-	//char* hash = reinterpret_cast<char*>(digest);
 }
 
 void request_handler::handle_websocket_request(const request& req, reply& rep)
-{
+{	
+	/*
+	HTTP/1.1 101 Switching Protocols
+	Upgrade: websocket
+	Connection: Upgrade
+	Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+	*/
 
-}
-
-void request_handler::handle_request(const request& req, reply& rep)
-{
 	std::string seckey;
-	for each ( header h in req.headers)
+	for each (header h in req.headers)
 	{
-		printf("%s: %s\n", h.name.data(), h.value.data());
 		if (h.name == "Upgrade" && h.value == "websocket")
 			printf("WS!!!!\n");
 		else if (h.name == "Sec-WebSocket-Key")
 			seckey = compute_seckey(h.value);
 	}
 
-	//std::string seckey = compute_seckey("dGhlIHNhbXBsZSBub25jZQ==");
 
-
-	/*
-		HTTP/1.1 101 Switching Protocols
-        Upgrade: websocket
-        Connection: Upgrade
-        Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
-	*/
 	// Fill out the reply to be sent to the client.
-	
+
 	rep.status = reply::switching_protocols;
 	rep.headers.resize(3);
 	rep.headers[0].name = "Upgrade";
@@ -136,6 +115,20 @@ void request_handler::handle_request(const request& req, reply& rep)
 	rep.headers[2].name = "Sec-WebSocket-Accept";
 	rep.headers[2].value = seckey;
 	return;
+}
+
+void request_handler::handle_request(const request& req, reply& rep)
+{
+	// First of all try to find the "Upgrade" header to check if the request is for a new 
+	// Websocket connection
+	for each (header h in req.headers)
+	{
+		if (h.name == "Upgrade" && h.value == "websocket")
+		{
+			handle_websocket_request(req, rep);
+			return;
+		}
+	}
 
   // Decode url to path.
   std::string request_path;

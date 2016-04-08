@@ -78,6 +78,7 @@
     <ClInclude Include="request_handler.hpp" />
     <ClInclude Include="request_parser.hpp" />
     <ClInclude Include="server.hpp" />
+    <ClInclude Include="ws_frame_parser.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="connection.cpp" />

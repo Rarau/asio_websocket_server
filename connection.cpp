@@ -13,10 +13,12 @@
 #include <vector>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
+#include "ws_frame_parser.hpp"
 
 namespace http {
 namespace server {
 	bool ws_connected;
+
 connection::connection(boost::asio::ip::tcp::socket socket,
     connection_manager& manager, request_handler& handler)
   : socket_(std::move(socket)),
@@ -46,7 +48,61 @@ void connection::do_read()
         {
 			if (ws_connected)
 			{
-				printf(buffer_.data());
+				ws_frame frame;
+
+				frame.fin = 0x80 & buffer_[0];
+				frame.masking = 0x80 & buffer_[1];
+
+				frame.payload_len = (unsigned int)(buffer_[1] & 0x7F);
+				int masking_key_offset = 0;
+				// If 126, the following 2 bytes interpreted as a 16 - bit unsigned integer are the payload length.
+				if (frame.payload_len == 126)
+				{
+					masking_key_offset = 2;
+					unsigned short s = ((buffer_[2] << 8) | buffer_[3]);
+					frame.payload_len = s;
+				}
+				// If 127, the following 8 bytes interpreted as a 64 - bit unsigned integer(the most significant bit MUST be 0) are the payload length.
+				else if (frame.payload_len == 127)
+				{
+					unsigned long long int s = 
+					(
+						(buffer_[2] << 64) | (buffer_[3] << 56) | (buffer_[4] << 48) |
+						(buffer_[5] << 40) | (buffer_[6] << 32) | (buffer_[7] << 24) | 
+						(buffer_[8] << 12) | (buffer_[9] << 4) | buffer_[10]
+					);
+					frame.payload_len = s;
+					masking_key_offset = 8;
+				}
+
+				if (frame.masking)
+				{
+					frame.masking_key[0] = (buffer_[2] + masking_key_offset);
+					frame.masking_key[1] = (buffer_[3] + masking_key_offset);
+					frame.masking_key[2] = (buffer_[4] + masking_key_offset);
+					frame.masking_key[3] = (buffer_[5] + masking_key_offset);
+				}
+				else
+				{
+					frame.masking_key[0] = 0;
+					frame.masking_key[1] = 0;
+					frame.masking_key[2] = 0;
+					frame.masking_key[3] = 0;
+				}
+
+				frame.payload = std::vector<unsigned char>();
+
+	
+				for (int i = 0; i < frame.payload_len; ++i)
+				{
+					unsigned char original = buffer_[6 + masking_key_offset + i];
+					frame.payload.push_back(original ^ frame.masking_key[i % 4]);
+				}
+				
+
+				printf("masking: %s\n payload: %d bytes\n", frame.masking ? "True" : "False", frame.payload_len);
+				printf("%s\n", frame.payload.data());
+
 				return;
 			}
 

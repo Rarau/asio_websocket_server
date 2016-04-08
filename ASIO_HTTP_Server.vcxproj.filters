@@ -45,6 +45,9 @@
     <ClInclude Include="Base64Utilities.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ws_frame_parser.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="request_parser.cpp">
