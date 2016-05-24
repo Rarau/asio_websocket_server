@@ -1,3 +1,5 @@
+// Adapted to Websockets 
+// by Raul Araujo 2016
 //
 // connection.cpp
 // ~~~~~~~~~~~~~~
