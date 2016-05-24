@@ -1,3 +1,4 @@
+## H2
 Simple WebSocket server using Boost ASIO Library.
 
 Supports concurrent web browser clients.
