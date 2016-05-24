@@ -49,6 +49,9 @@ private:
   /// Perform an asynchronous write operation.
   void do_write_http();
 
+  /// Asynchronously write arbitrary data
+  void connection::do_write(const void* data, int size);
+
   /// Socket for the connection.
   boost::asio::ip::tcp::socket socket_;
 

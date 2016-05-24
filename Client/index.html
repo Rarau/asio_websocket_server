@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+   <head>
+	
+      <script type="text/javascript">
+	  
+         var ws;
+
+         function logMessage(msg)
+         {
+            var node = document.createElement("li");                 // Create a <li> node
+            var textnode = document.createTextNode(msg);         // Create a text node
+            node.appendChild(textnode);                              // Append the text to <li>
+            document.getElementById("log").appendChild(node);  
+         }
+
+         function Connect()
+         {
+            if ("WebSocket" in window)
+            {
+               logMessage("WebSocket is supported by your Browser!");
+
+               // Let us open a web socket
+               ws = new WebSocket("ws://localhost:55555");
+
+               ws.onopen = function()
+               {
+                  // Web Socket is connected, send data using send()
+                  //ws.send("Message to send");
+                  //alert("Message is sent...");
+                  logMessage("Connection established")
+                  document.getElementById("cmdText").disabled = false; 
+               };
+
+               ws.onmessage = function (evt) 
+               { 
+                  var received_msg = evt.data;
+                  alert("Message is received...");
+               };
+
+               ws.onclose = function()
+               { 
+                  // websocket is closed.
+                  logMessage("Connection is closed..."); 
+                  document.getElementById("cmdText").disabled = true; 
+               };
+            }
+            else
+            {
+               // The browser doesn't support WebSocket
+               //alert("WebSocket NOT supported by your Browser!");
+               document.getElementById("cmdText").disabled = true; 
+               logMessage("Message sent"); 
+
+            }
+         }
+
+         function sendCommand()
+         {
+            ws.send(document.getElementById("cmdText").value);
+         }
+
+      </script>
+		
+   </head>
+   <body>
+   
+    <button onclick="Connect()">Connect</button>
+	<br/>
+    Command
+    <input type="text" id="cmdText" disabled="true">
+		<button onclick="sendCommand()">Send</button>
+    </input>
+	
+	<ul id="log">
+	</ul>
+	
+   </body>
+</html>

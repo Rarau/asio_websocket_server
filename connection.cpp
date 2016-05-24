@@ -29,7 +29,7 @@ connection::connection(boost::asio::ip::tcp::socket socket,
 
 void connection::start()
 {
-	ws_connected = false;
+  ws_connected = false;
   do_read();
 }
 
@@ -99,10 +99,11 @@ void connection::do_read()
 					frame.payload.push_back(original ^ frame.masking_key[i % 4]);
 				}
 				
-
 				printf("masking: %s\n payload: %d bytes\n", frame.masking ? "True" : "False", frame.payload_len);
-				printf("%s\n", frame.payload.data());
+				printf("Data: %s\n", frame.payload.data());
 
+				//do_write("Data: %s\n", 5);
+				do_read();
 				return;
 			}
 
@@ -158,6 +159,19 @@ void connection::do_write_http()
         }
 		*/
       });
+}
+
+void connection::do_write(const void* data, int size)
+{
+	auto self(shared_from_this());
+	boost::asio::async_write(socket_, boost::asio::buffer(data, size),
+		[this, self](boost::system::error_code ec, std::size_t)
+	{
+		if (!ec)
+		{
+			do_read();
+		}
+	});
 }
 
 } // namespace server

@@ -98,7 +98,7 @@ void request_handler::handle_websocket_request(const request& req, reply& rep)
 	for each (header h in req.headers)
 	{
 		if (h.name == "Upgrade" && h.value == "websocket")
-			printf("WS!!!!\n");
+			printf("HTTP Websocket Upgrade Request received\n");
 		else if (h.name == "Sec-WebSocket-Key")
 			seckey = compute_seckey(h.value);
 	}
